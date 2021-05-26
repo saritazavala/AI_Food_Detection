@@ -1,12 +1,12 @@
-import * as tf from '@tensorflow/tfjs';
-import '@tensorflow/tfjs-react-native';
-import {bundleResourceIO, decodeJpeg} from '@tensorflow/tfjs-react-native';
+import * as tf from "@tensorflow/tfjs";
+import "@tensorflow/tfjs-react-native";
+import { bundleResourceIO, decodeJpeg } from "@tensorflow/tfjs-react-native";
 
-import {Base64Binary} from '../utils/utils';
+import { Base64Binary } from "../utils/utils";
 const BITMAP_DIMENSION = 224;
 
-const modelJson = require('../model/model.json');
-const modelWeights = require('../model/weights.bin');
+const modelJson = require("../model/model.json");
+const modelWeights = require("../model/weights.bin");
 
 // 0: channel from JPEG-encoded image
 // 1: gray scale
@@ -20,7 +20,7 @@ export const getModel = async () => {
     // load the trained model
     return await tf.loadLayersModel(bundleResourceIO(modelJson, modelWeights));
   } catch (error) {
-    console.log('Could not load model', error);
+    console.log("Could not load model", error);
   }
 };
 
@@ -37,17 +37,17 @@ export const convertBase64ToTensor = async (base64) => {
       TENSORFLOW_CHANNEL,
     ]);
   } catch (error) {
-    console.log('Could not convert base64 string to tesor', error);
+    console.log("Could not convert base64 string to tesor", error);
   }
 };
 
-export const startPrediction = async (model, tensor) => {
-  try {
-    // predict against the model
-    const output = await model.predict(tensor);
-    // return typed array
-    return output.dataSync();
-  } catch (error) {
-    console.log('Error predicting from tesor image', error);
-  }
-};
+// export const startPrediction = async (model, tensor) => {
+//   try {
+//     // predict against the model
+//     const output = await model.predict(tensor);
+//     // return typed array
+//     return output.dataSync();
+//   } catch (error) {
+//     console.log('Error predicting from tesor image', error);
+//   }
+// };

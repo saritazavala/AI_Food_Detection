@@ -3,6 +3,7 @@ import {
   View,
   Button,
   StyleSheet,
+  ActivityIndicator,
   TouchableOpacity,
   Text,
   Image,
@@ -47,13 +48,26 @@ const Prediction = (props) => {
       // getPermissionAsync(); // get the permission for camera roll access for iOS users
     })();
   }, []);
-
+  const RESULT_MAPPING = [
+    "Carpaccio",
+    "Espagueti",
+    "Lasagna",
+    "Pizza",
+    "Risotto",
+    "Tiramisu",
+  ];
   async function handlerSelectImage(source) {
     try {
-      // const croppedData = await cropPicture(source, 300);
-      const decodedImage = await convertBase64ToTensor(source.base64);
+      const croppedData = await cropPicture(source, 300);
+
+      const decodedImage = await convertBase64ToTensor(croppedData.base64);
+      // console.log(decodedImage);
       const prediction = await startPrediction(model, decodedImage);
-      console.log(JSON.stringify(prediction));
+      const highestPrediction = prediction.indexOf(
+        Math.max.apply(null, prediction)
+      );
+
+      console.log(RESULT_MAPPING[highestPrediction]);
       setImage(source.base64);
     } catch (error) {
       setError(error);
@@ -65,7 +79,18 @@ const Prediction = (props) => {
       const imgBuffer = tf.util.encodeString(base64, "base64").buffer;
       const newData = new Uint8Array(imgBuffer);
       const imageTensor = decodeJpeg(newData);
-      return imageTensor;
+      let tensor = imageTensor;
+      // let tensor = imageTensor.reshape([
+      //   1,
+      //   BITMAP_DIMENSION,
+      //   BITMAP_DIMENSION,
+      //   TENSORFLOW_CHANNEL,
+      // ]);
+      // tensor.dtype = "float32";
+      // return tensor;
+      tensor.shape = [1, tensor.shape[0], tensor.shape[1], tensor.shape[2]];
+      tensor.dtype = "float32";
+      return tensor;
     } catch (error) {
       console.log("Could not convert base64 string to tesor", error);
     }
@@ -74,9 +99,10 @@ const Prediction = (props) => {
   const startPrediction = async (model, tensor) => {
     try {
       // predict against the model
-      console.log(tensor);
+
       const output = await model.predict(tensor);
       // return typed array
+      console.log(output.dataSync());
       return output.dataSync();
     } catch (error) {
       console.log("Error predicting from tesor image", error);
@@ -103,6 +129,7 @@ const Prediction = (props) => {
           </View>
         </View>
       )}
+      {!model && <ActivityIndicator size='large' color='orange' />}
     </View>
   );
 };
